@@ -1,0 +1,62 @@
+name: Build and Release Electron App
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+  #   paths-ignore:
+  #     - '**/*.md'
+  #     - '**/.gitignore'
+  #     - '**/LICENSE'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check for changes
+        id: version
+        working-directory: ./app
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+
+          # get latest nightly tag
+          LATEST_NIGHTLY_TAG=$(git tag -l v${VERSION}-nightly-\* --sort=-creatordate | head -n 1)
+
+          # check if last commit to dev starts would be the nightly tag we're about to create (minus the date)
+          # if it is, we'll skip the nightly creation
+          # if not, we'll create a new nightly tag
+          if [[ ${LATEST_NIGHTLY_TAG} == v${VERSION}-nightly-${SHORT_SHA}-* ]]; then
+            echo "🛑 Latest nightly tag is the same as the latest commit sha, skipping nightly release"
+          else
+            # yyyyMMdd format (e.g. 20221207)
+            DATE=$(date '+%Y%m%d')
+            # v0.0.0-nightly-<short sha>-<date>
+            NEXT_VERSION=${VERSION}-nightly-${SHORT_SHA}-${DATE}
+            # set output so it can be used in other jobs
+            echo "NEXT_VERSION=${NEXT_VERSION}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update version
+        if: steps.version.outputs.NEXT_VERSION
+        run: |
+          echo "- \`VERSION\`: ${{steps.version.outputs.NEXT_VERSION}}" >> $GITHUB_STEP_SUMMARY

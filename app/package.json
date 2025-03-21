@@ -1,0 +1,14 @@
+{
+  "name": "launcher",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm"
+  },
+  "dependencies": {
+    "nw-flash-trust": "^0.3.0"
+  },
+  "devDependencies": {
+    "electron": "11.5.0"
+  }
+}
