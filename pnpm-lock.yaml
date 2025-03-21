@@ -14,12 +14,6 @@ importers:
       '@ntnyq/prettier-config':
         specifier: ^2.0.0
         version: 2.0.0
-      '@types/node':
-        specifier: ^22.13.10
-        version: 22.13.10
-      typescript:
-        specifier: ^5.8.2
-        version: 5.8.2
 
   app:
     dependencies:
@@ -27,9 +21,15 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0
     devDependencies:
+      '@types/node':
+        specifier: ^22.13.10
+        version: 22.13.10
       electron:
         specifier: 11.5.0
         version: 11.5.0
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
 
 packages:
 

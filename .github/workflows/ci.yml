@@ -27,7 +27,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - id: version
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Nightly Version
         working-directory: ./app
         run: |
           VERSION=$(jq -r '.version' package.json)
@@ -35,8 +47,6 @@ jobs:
 
           DATE=$(date '+%Y%m%d')
           NEXT_VERSION=${VERSION}-${SHORT_SHA}-${DATE}
-          echo "NEXT_VERSION=${NEXT_VERSION}" >> $GITHUB_ENV
 
-      - name: Update version
-        run: |
+          echo "NEXT_VERSION=${NEXT_VERSION}" >> $GITHUB_ENV
           echo "- \`VERSION\`: ${{env.NEXT_VERSION}}" >> $GITHUB_STEP_SUMMARY

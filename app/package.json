@@ -9,6 +9,8 @@
     "nw-flash-trust": "^0.3.0"
   },
   "devDependencies": {
-    "electron": "11.5.0"
+    "@types/node": "^22.13.10",
+    "electron": "11.5.0",
+    "typescript": "^5.8.2"
   }
 }
