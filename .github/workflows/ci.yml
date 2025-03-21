@@ -23,7 +23,7 @@ defaults:
     shell: bash
 
 jobs:
-  check-version:
+  prepare:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,6 @@ jobs:
           submodules: recursive
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
-        name: Install pnpm
         with:
           run_install: false
       - uses: actions/setup-node@v4
@@ -50,3 +49,10 @@ jobs:
 
           echo "NEXT_VERSION=${NEXT_VERSION}" >> $GITHUB_ENV
           echo "- \`VERSION\`: ${{env.NEXT_VERSION}}" >> $GITHUB_STEP_SUMMARY
+  nightly:
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - name: Print List
+        run: |
+          find ./ -type f
