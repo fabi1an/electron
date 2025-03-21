@@ -37,18 +37,23 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - name: Verify pnpm Cache Path
+        run: |
+          if [ ! -d "$PNPM_HOME" ]; then
+            echo "pnpm cache path does not exist: $PNPM_HOME"
+            exit 1
+          fi
 
       - name: Nightly Version
         working-directory: ./app
         run: |
           VERSION=$(jq -r '.version' package.json)
           SHORT_SHA=$(git rev-parse --short HEAD)
-
           DATE=$(date '+%Y%m%d')
           NEXT_VERSION=${VERSION}-${SHORT_SHA}-${DATE}
-
           echo "NEXT_VERSION=${NEXT_VERSION}" >> $GITHUB_ENV
           echo "- \`VERSION\`: ${{env.NEXT_VERSION}}" >> $GITHUB_STEP_SUMMARY
+
   nightly:
     runs-on: ubuntu-latest
     needs: prepare
