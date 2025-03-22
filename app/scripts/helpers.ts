@@ -5,7 +5,7 @@ import { type BuildOptions } from 'esbuild'
 export function getMainProcessCommonConfig(root) {
   return {
     entryPoints: [
-      path.join(root, 'src', "main", ""),
+      path.join(root, 'src', 'main', ''),
       path.join(root, 'main', 'preload.ts'),
     ],
     bundle: true,

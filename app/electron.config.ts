@@ -15,7 +15,6 @@ const author: string = _author?.name ?? _author
 const currentYear = new Date().getFullYear()
 const appId = `com.${author.replace(/\s+/g, '-')}.${name}`.toLowerCase()
 
-/*eslint no-template-curly-in-string: "off"*/
 const artifactName = [`${name}-v${version}-`, '${os}.${ext}'].join('')
 
 export default {

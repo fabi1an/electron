@@ -22,6 +22,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ['bytenode'],
+      input: path.resolve(__dirname, 'src/preload.ts'),
       output: { minifyInternalExports: true },
     },
   },
