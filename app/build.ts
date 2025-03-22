@@ -65,9 +65,9 @@ async function copyPackageJson() {
     ),
     main: path.join(paths[0], 'main.cjs'),
     dependencies: {},
-  };
+  }
 
-  [viteConfig.build?.rollupOptions?.external]
+  ;[viteConfig.build?.rollupOptions?.external]
     .flat()
     .filter(_ => typeof _ === 'string')
     .forEach(dep => {
