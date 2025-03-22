@@ -2,13 +2,13 @@ name: CI
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "**/*.md"
-      - "**/.gitignore"
-      - "**/LICENSE"
+  # push:
+  #   branches:
+  #     - main
+  #   paths-ignore:
+  #     - "**/*.md"
+  #     - "**/.gitignore"
+  #     - "**/LICENSE"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

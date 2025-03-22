@@ -5,9 +5,14 @@
   "packageManager": "pnpm@10.6.5",
   "license": "MIT",
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
     "build": "pnpm -r --stream run build",
-    "dev": "pnpm -r --stream run dev"
+    "dev": "pnpm -r --stream run dev",
+    "eslint": "eslint .",
+    "eslint:fix": "eslint . --fix",
+    "preinstall": "npx only-allow pnpm"
+  },
+  "dependencies": {
+    "eslint": "^9.22.0"
   },
   "devDependencies": {
     "@ntnyq/eslint-config": "^4.0.2",
