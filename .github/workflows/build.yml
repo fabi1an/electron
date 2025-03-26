@@ -97,7 +97,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline --recursive
 
       - name: Compile with Bash
-        if: startsWith(matrix.os, 'ubuntu')
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
         run: pnpm build
 
       - name: Compile with Powershell
