@@ -14,10 +14,11 @@ export default defineConfig({
     ssr: true,
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
+      "formats": ["es"]
     },
     rollupOptions: {
       input: path.resolve(__dirname, 'src/preload.ts'),
-      output: { minifyInternalExports: true },
+      output: { format: "esm", minifyInternalExports: true },
     },
   },
 })

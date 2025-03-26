@@ -41,7 +41,6 @@ async function run() {
       if ('output' in bundle) {
         for (const chunk of bundle.output) {
           if (chunk.type === 'chunk' && chunk.facadeModuleId === entry.main) {
-            console.log(chunk)
             entryMain = chunk.fileName
           }
         }
