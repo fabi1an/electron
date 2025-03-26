@@ -83,6 +83,7 @@ jobs:
           fi
           echo "VERSION=${{ steps.package-info.outputs.version }}" >> $GITHUB_ENV
           echo "NAME=${{ steps.package-info.outputs.name }}" >> $GITHUB_ENV
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Cache electron modules
         uses: actions/cache@v4
@@ -108,19 +109,20 @@ jobs:
         run: |
           VERSION=${{ env.VERSION }}
           NAME=${{ env.NAME }}
+          SHORT_SHA=${{ env.SHORT_SHA }}
           OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
           ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]')
           mkdir -p ./artifacts
           find ./electron -type f -name "*${VERSION}*" | while read -r FILE; do
-            FILENAME="${NAME}-${VERSION}-${OS}-${ARCH}.${FILE##*.}"
+            FILENAME="${NAME}-${VERSION}-${OS}-${ARCH}-${SHORT_SHA}.${FILE##*.}"
             mv "$FILE" "./artifacts/$FILENAME"
             echo "\`ARTIFACT\`: $FILENAME" >> $GITHUB_STEP_SUMMARY
           done
           if [[ "$OS" == "windows" ]]; then
             for DIR in "win-unpacked" "win-ia32-unpacked"; do
               if [ -d "./electron/$DIR" ]; then
-                ZIP_NAME="${NAME}-${VERSION}-${OS}-${ARCH}.portable.zip"
-                powershell Compress-Archive -Path "./electron/$DIR/*" -DestinationPath "./artifacts/$ZIP_NAME"
+                ZIP_NAME="${NAME}-${VERSION}-${OS}-${ARCH}-${SHORT_SHA}.portable.zip"
+                7z a -tzip -mx9 -m0=LZMA2 "./artifacts/$ZIP_NAME" "./electron/$DIR/*"
                 echo "\`ARTIFACT\`: $ZIP_NAME" >> $GITHUB_STEP_SUMMARY
               fi
             done
@@ -155,23 +157,21 @@ jobs:
       - name: Generate Nightly release notes
         id: generate-notes
         run: |
-          body=$(cat<<EOF
-          This is a nightly release of Dissent. It is built from the latest
-          commit on the `main` branch.
-          **Warning:** This release is not guaranteed to be stable and may
-          contain bugs. Use at your own risk. Please report any issues you
-          encounter as separate GitHub Issues.
-          EOF)
-
-          echo "body=$(jq --null-input --arg body "$body" '$body')" >> $GITHUB_OUTPUT
+          SHORT_SHA=${{ env.SHORT_SHA }}
+          echo "body=\"Development release for commit $SHORT_SHA\"" >> $GITHUB_OUTPUT
 
       - name: Update Nightly Release
         uses: andelf/nightly-release@main
         with:
-          name: Nightly Release
+          name: Development Release
           body: ${{ fromJSON(steps.generate-notes.outputs.body) }}
           tag_name: nightly
           prerelease: true
-          files: './artifacts/*${{ env.VERSION }}*'
+          files: |
+            ./artifacts/*${{ env.VERSION }}*.AppImage
+            ./artifacts/*${{ env.VERSION }}*.snap
+            ./artifacts/*${{ env.VERSION }}*.dmg
+            ./artifacts/*${{ env.VERSION }}*.zip
+            ./artifacts/*${{ env.VERSION }}*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
