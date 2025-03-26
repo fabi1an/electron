@@ -121,8 +121,9 @@ jobs:
           if [[ "$OS" == "windows" ]]; then
             for DIR in "win-unpacked" "win-ia32-unpacked"; do
               if [ -d "./bundled/$DIR" ]; then
-                ZIP_NAME="${NAME}-${VERSION}-${OS}-${ARCH}-${SHORT_SHA}.portable.zip"
-                7z a -tzip -mx9 -m0=LZMA2 "./artifacts/$ZIP_NAME" "./bundled/$DIR/*"
+                ZIP_NAME="${NAME}-${VERSION}-${OS}-${ARCH}-${SHORT_SHA}.portable"
+                7z a -tzip -mx9 "./artifacts/$ZIP_NAME.zip" "./bundled/$DIR/*"
+                7z a -t7z -mx9 "./artifacts/$ZIP_NAME.7z" "./bundled/$DIR/*"
                 echo "\`ARTIFACT\`: $ZIP_NAME" >> $GITHUB_STEP_SUMMARY
               fi
             done
