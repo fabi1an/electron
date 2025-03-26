@@ -96,9 +96,15 @@ jobs:
       - name: Install node dependencies
         run: pnpm install --frozen-lockfile --prefer-offline --recursive
 
-      - name: Compile
+      - name: Compile with Bash
+        if: startsWith(matrix.os, 'ubuntu')
         run: pnpm build
 
+      - name: Compile with Powershell
+        if: startsWith(matrix.os, 'windows')
+        shell: powershell
+        run: pnpm build
+  
       - name: Move artifacts
         working-directory: ./app/dist
         run: |
