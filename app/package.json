@@ -12,7 +12,6 @@
     "start": "pnpm build && electron ."
   },
   "dependencies": {
-    "bytenode": "^1.5.7",
     "deepmerge-ts": "^7.1.5",
     "nw-flash-trust": "^0.3.0"
   },
