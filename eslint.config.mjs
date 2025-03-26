@@ -29,7 +29,7 @@ export default defineESLintConfig(
         '@typescript-eslint/no-use-before-define': 'off',
       },
       parserOptions: {
-        project: ['app/*/tsconfig.json', 'packages/*/tsconfig.json'],
+        project: ['app/tsconfig.json', 'packages/*/tsconfig.json'],
       },
     },
   },
