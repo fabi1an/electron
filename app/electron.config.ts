@@ -16,7 +16,6 @@ const currentYear = new Date().getFullYear()
 const appId = `com.${author.replace(/\s+/g, '-')}.${name}`.toLowerCase()
 
 const artifactName = [`${name}-v${version}-`, '${os}.${ext}'].join('')
-
 export default {
   appId,
   asarUnpack: '**/*.{node,dll}',
@@ -26,6 +25,12 @@ export default {
   directories: {
     buildResources: 'resources',
     output: 'dist/electron',
+  },
+  electronVersion: "22.3.27",
+  electronDownload: {
+    isVerifyChecksum: false,
+    strictSSL: false,
+    mirror: "https://github.com/Alex313031/electron-22/releases/download/v"
   },
   extraResources: [
     {
