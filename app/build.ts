@@ -34,19 +34,36 @@ async function run() {
     },
   })
 
-  await vite.build(mergedViteConfig)
-  await copyPackageJson()
+  const bundled = await vite.build(mergedViteConfig)
+  let entryMain: string | null = null
+  if (Array.isArray(bundled)) {
+    for (const bundle of bundled) {
+      if ('output' in bundle) {
+        for (const chunk of bundle.output) {
+          if (chunk.type === 'chunk' && chunk.facadeModuleId === entry.main) {
+            console.log(chunk)
+            entryMain = chunk.fileName
+          }
+        }
+      }
+    }
+  }
 
-  await electron.build({
-    config: deepmerge(electronConfig, {
-      directories: { output: paths[1], app: paths[0] },
-      files: [path.join('.', '**', '*')],
-      extends: null,
-    }),
-  })
+  if (entryMain) {
+    await copyPackageJson(entryMain)
+    await electron.build({
+      config: deepmerge(electronConfig, {
+        directories: { output: paths[1], app: paths[0] },
+        files: [path.join('.', '**', '*')],
+        extends: null,
+      }),
+    })
+  } else {
+    throw new Error("Main entry filename doesn't exist!")
+  }
 }
 
-async function copyPackageJson() {
+async function copyPackageJson(entry: string) {
   const packageJsonPath = path.join(dirname, 'package.json')
   const packageJson = JSON.parse(
     await fs.promises.readFile(packageJsonPath, 'utf-8'),
@@ -63,7 +80,7 @@ async function copyPackageJson() {
         'license',
       ].map(_ => [_, packageJson[_]]),
     ),
-    main: './main.cjs',
+    main: path.basename(entry),
     dependencies: {},
   }
 

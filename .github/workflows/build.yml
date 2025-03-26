@@ -104,7 +104,7 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         shell: powershell
         run: pnpm build
-  
+
       - name: Move artifacts
         working-directory: ./app/dist
         run: |
