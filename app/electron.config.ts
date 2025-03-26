@@ -3,6 +3,10 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type Configuration } from 'electron-builder'
 
+// eslint-disable-next-line node/prefer-global/process
+process.env.ELECTRON_BUILDER_BINARIES_MIRROR =
+  'https://github.com/Alex313031/electron-22/releases/download/'
+
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const {
   _name,
