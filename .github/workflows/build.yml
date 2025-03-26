@@ -72,6 +72,7 @@ jobs:
           path: ./app
 
       - name: Setup environment variables
+        working-directory: ./app
         run: |
           if [[ "${{ runner.os }}" == "Windows" ]]; then
             echo "HOME=$USERPROFILE" >> $GITHUB_ENV
@@ -81,8 +82,9 @@ jobs:
             echo "ELECTRON_CACHE=$HOME/.cache/electron" >> $GITHUB_ENV
             echo "ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder" >> $GITHUB_ENV
           fi
-          echo "VERSION=${{ steps.package-info.outputs.version }}" >> $GITHUB_ENV
-          echo "NAME=${{ steps.package-info.outputs.name }}" >> $GITHUB_ENV
+
+          echo "VERSION=$(jq -r '.version' package.json)" >> $GITHUB_ENV
+          echo "NAME=$(jq -r '.name' package.json)" >> $GITHUB_ENV
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Cache electron modules

@@ -4,4 +4,3 @@ packages:
 onlyBuiltDependencies:
   - electron
   - esbuild
-  - javascript-obfuscator
