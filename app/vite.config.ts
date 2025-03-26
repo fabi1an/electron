@@ -3,13 +3,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { fileURLToPath } from 'node:url'
-import v8 from 'node:v8'
 import bytenodeCore from 'bytenode'
 import { defineConfig, type Plugin } from 'vite'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-v8.setFlagsFromString('--no-lazy')
 export default defineConfig({
   plugins: [byteCode()],
   build: {
@@ -43,13 +41,13 @@ function byteCode(): Plugin {
           if (compileAsModule) {
             bytenodeCore.compileFile({
               compileAsModule,
-              electron: false,
+              electron: true,
               filename: targetFile,
             })
 
             fs.writeFileSync(
               targetFile,
-              `require("bytenode");\nrequire("./${name}.jsc");`,
+              `"use strict";require('bytenode');require('v8').setFlagsFromString('--no-lazy');require('./${name}.jsc');`,
             )
           }
         }
