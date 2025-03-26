@@ -172,7 +172,8 @@ jobs:
             ./artifacts/*${{ env.VERSION }}*.AppImage
             ./artifacts/*${{ env.VERSION }}*.snap
             ./artifacts/*${{ env.VERSION }}*.dmg
-            ./artifacts/*${{ env.VERSION }}*.zip
             ./artifacts/*${{ env.VERSION }}*.exe
+            ./artifacts/*${{ env.VERSION }}*.zip
+            ./artifacts/*${{ env.VERSION }}*.7z
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
