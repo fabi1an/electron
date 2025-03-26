@@ -4,8 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "pnpm -r --stream run build",
-    "dev": "pnpm -r --stream run dev",
+    "build": "pnpm --stream --filter launcher... run build",
     "eslint": "eslint .",
     "eslint:fix": "eslint . --fix",
     "preinstall": "npx only-allow pnpm"
