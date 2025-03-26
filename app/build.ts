@@ -63,7 +63,7 @@ async function copyPackageJson() {
         'license',
       ].map(_ => [_, packageJson[_]]),
     ),
-    main: path.join(paths[0], 'main.cjs'),
+    main: './main.cjs',
     dependencies: {},
   }
 
