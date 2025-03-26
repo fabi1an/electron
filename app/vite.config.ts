@@ -37,7 +37,7 @@ function byteCode(): Plugin {
       async handler(opts, bundle) {
         if (!opts.dir) return
         for (const file of Object.keys(bundle)) {
-          const { ext } = path.parse(file)
+          const { ext, name } = path.parse(file)
           const targetFile = path.resolve(path.join(opts.dir, file))
           const compileAsModule = ext.toLowerCase() === '.cjs'
           if (compileAsModule) {
