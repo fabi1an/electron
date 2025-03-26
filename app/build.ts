@@ -40,7 +40,7 @@ async function run() {
     for (const bundle of bundled) {
       if ('output' in bundle) {
         for (const chunk of bundle.output) {
-          if (chunk.type === 'chunk' && chunk.facadeModuleId === entry.main) {
+          if (chunk.type === 'chunk' && path.resolve(`${chunk.facadeModuleId}`) === path.resolve(entry.main)) {
             entryMain = chunk.fileName
           }
         }
