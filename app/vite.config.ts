@@ -17,6 +17,7 @@ export default defineConfig({
       "formats": ["cjs"]
     },
     rollupOptions: {
+      external: ["nw-flash-trust"],
       input: path.resolve(__dirname, 'src/preload.ts'),
       output: { format: "cjs", minifyInternalExports: true },
     },
