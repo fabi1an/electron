@@ -6,21 +6,20 @@
     "name": "lazuee"
   },
   "scripts": {
-    "build": "pnpm dlx tsx ./build.ts",
+    "build": "pnpx tsx ./build.ts",
     "postinstall": "electron-builder install-app-deps",
     "preinstall": "npx only-allow pnpm",
-    "start": "electron ./dist/build/main.cjs"
+    "start": "electron ./dist/index.js"
   },
   "dependencies": {
-    "deepmerge-ts": "^7.1.5",
     "nw-flash-trust": "^0.3.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
+    "dotenv": "^16.5.0",
     "electron": "11.5.0",
     "electron-builder": "^25.1.8",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.0",
-    "vite-plugin-commonjs": "^0.10.4"
+    "parcel": "^2.14.4",
+    "typescript": "^5.8.3"
   }
 }

@@ -1,75 +1,53 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import url from 'node:url'
-import { deepmerge } from 'deepmerge-ts'
+import { fileURLToPath } from 'node:url'
+import { Parcel } from '@parcel/core'
+import { type InitialParcelOptions } from '@parcel/types'
+
+import dotenv from 'dotenv'
 import * as electron from 'electron-builder'
-import * as vite from 'vite'
 import electronConfig from './electron.config'
-import viteConfig from './vite.config'
 
-const dirname = path.dirname(url.fileURLToPath(import.meta.url))
-const paths = ['build', 'bundled'].map(x => path.join(dirname, 'dist', x))
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-const entry = {
-  main: (viteConfig.build?.lib as any).entry,
-  preload: (viteConfig.build?.rollupOptions as any)?.input,
-}
+dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
-async function run() {
-  paths.forEach(
-    p => fs.existsSync(p) && fs.rmSync(p, { recursive: true, force: true }),
-  )
-  paths.forEach(p => fs.mkdirSync(p, { recursive: true }))
-
-  const mergedViteConfig = deepmerge(viteConfig, {
-    build: {
-      outDir: paths[0],
-      rollupOptions: {
-        input: Object.fromEntries(
-          Object.entries(entry).filter(
-            ([_, value]) => typeof value === 'string',
-          ),
-        ),
-      },
-    },
+const distDir = path.join(__dirname, 'dist')
+if (fs.existsSync(distDir)) {
+  fs.rmSync(distDir, {
+    recursive: true,
+    force: true,
   })
+}
 
-  const bundled = await vite.build(mergedViteConfig)
-  let entryMain: string | null = null
-  if (Array.isArray(bundled)) {
-    for (const bundle of bundled) {
-      if ('output' in bundle) {
-        for (const chunk of bundle.output) {
-          if (
-            chunk.type === 'chunk'
-            && path.resolve(`${chunk.facadeModuleId}`)
-              === path.resolve(entry.main)
-          ) {
-            entryMain = chunk.fileName
-          }
-        }
-      }
-    }
-  }
-
-  if (entryMain) {
-    await copyPackageJson(entryMain)
-    await electron.build({
-      config: deepmerge(electronConfig, {
-        directories: { output: paths[1], app: paths[0] },
-        files: [path.join('.', '**', '*')],
-        extends: null,
-      }),
-    })
-  } else {
-    throw new Error("Main entry filename doesn't exist!")
+function defineConfig<T extends InitialParcelOptions>(options: T) {
+  return {
+    defaultConfig: '@parcel/config-default',
+    shouldDisableCache: true,
+    cacheDir: path.join(distDir, '.parcel-cache'),
+    mode: 'production',
+    defaultTargetOptions: {
+      sourceMaps: false,
+      shouldScopeHoist: true,
+      distDir,
+    },
+    additionalReporters: [
+      {
+        packageName: '@parcel/reporter-cli',
+        resolveFrom: __filename,
+      },
+    ],
+    env: {
+      NODE_ENV: 'production',
+    },
+    ...options,
   }
 }
 
-async function copyPackageJson(entry: string) {
-  const packageJsonPath = path.join(dirname, 'package.json')
+async function buildElectron() {
   const packageJson = JSON.parse(
-    await fs.promises.readFile(packageJsonPath, 'utf-8'),
+    await fs.promises.readFile(path.join(__dirname, 'package.json'), 'utf-8'),
   )
   const modifiedPackageJson: Record<string, any> = {
     ...Object.fromEntries(
@@ -85,24 +63,75 @@ async function copyPackageJson(entry: string) {
         .map(_ => [_, packageJson?.[_]])
         .filter(Boolean),
     ),
-    main: path.basename(entry),
+    main: 'index.js',
     dependencies: {},
   }
 
-  ;[viteConfig.build?.rollupOptions?.external]
-    .flat()
-    .filter(_ => typeof _ === 'string')
-    .forEach(dep => {
-      if (packageJson.dependencies?.[dep]) {
-        modifiedPackageJson.dependencies[dep] = packageJson.dependencies[dep]
-      }
-    })
-
   await fs.promises.writeFile(
-    path.join(paths[0], 'package.json'),
+    path.join(distDir, 'package.json'),
     JSON.stringify(modifiedPackageJson, null, 2),
     'utf-8',
   )
+
+  await electron.build({
+    config: {
+      ...electronConfig,
+      ...{
+        directories: { app: distDir, output: path.join(distDir, 'electron') },
+        files: [path.join('.', '**', '*')],
+        extends: null,
+      },
+    },
+  })
 }
 
-run()
+async function build(watch = false) {
+  const configs = [
+    defineConfig({
+      entries: `src/index.ts`,
+      targets: {
+        electron: {
+          context: 'electron-main',
+          includeNodeModules: true,
+          distDir,
+        },
+      },
+    }),
+    defineConfig({
+      entries: `src/preload.ts`,
+      targets: {
+        preload: {
+          context: 'node',
+          distDir,
+        },
+      },
+    }),
+    defineConfig({
+      entries: `public/*.html`,
+      targets: {
+        renderer: {
+          context: 'browser',
+          distDir: path.join(distDir, 'public'),
+          publicUrl: '.',
+          engines: {
+            browsers: 'chrome 87',
+          },
+        },
+      },
+    }),
+  ] as const
+
+  if (watch) {
+    const bundler = new Parcel(configs[2])
+    await bundler.watch()
+  } else {
+    for (const config of configs) {
+      const bundler = new Parcel(config)
+      await bundler.run().catch(() => {})
+    }
+
+    await buildElectron()
+  }
+}
+
+build()

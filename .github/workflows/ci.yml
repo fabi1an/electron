@@ -108,17 +108,17 @@ jobs:
           OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
           ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]')
           mkdir -p ./artifacts
-          find ./bundled -type f -name "*${VERSION}*" | while read -r FILE; do
+          find ./electron -type f -name "*${VERSION}*" | while read -r FILE; do
             FILENAME="${NAME}-${VERSION}-${OS}-${ARCH}-${SHORT_SHA}.${FILE##*.}"
             mv "$FILE" "./artifacts/$FILENAME"
             echo "\`ARTIFACT\`: $FILENAME" >> $GITHUB_STEP_SUMMARY
           done
           if [[ "$OS" == "windows" ]]; then
             for DIR in "win-unpacked" "win-ia32-unpacked"; do
-              if [ -d "./bundled/$DIR" ]; then
+              if [ -d "./electron/$DIR" ]; then
                 ZIP_NAME="${NAME}-${VERSION}-${OS}-${ARCH}-${SHORT_SHA}.portable"
-                7z a -tzip -mx9 "./artifacts/$ZIP_NAME.zip" "./bundled/$DIR/*"
-                7z a -t7z -mx9 "./artifacts/$ZIP_NAME.7z" "./bundled/$DIR/*"
+                7z a -tzip -mx9 "./artifacts/$ZIP_NAME.zip" "./electron/$DIR/*"
+                7z a -t7z -mx9 "./artifacts/$ZIP_NAME.7z" "./electron/$DIR/*"
                 echo "\`ARTIFACT\`: $ZIP_NAME" >> $GITHUB_STEP_SUMMARY
               fi
             done

@@ -62,6 +62,5 @@ export default {
   },
   win: {
     artifactName,
-    target: ['zip', 'portable'],
   },
 } satisfies Configuration
