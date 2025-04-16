@@ -3,6 +3,7 @@ import path from 'node:path'
 import process from 'node:process'
 
 import { app, dialog } from 'electron'
+//@ts-expect-error - no types
 import flashTrust from 'nw-flash-trust'
 
 import { getAssetPath } from './getAssetPath'
@@ -12,14 +13,14 @@ export const addFlash = (swfPath: string) => {
     win32: 'pepflashplayer.dll',
     linux: 'libpepflashplayer.so',
     darwin: 'PepperFlashPlayer.plugin',
-  }
+  } as const
 
   const pluginFlashPath = getAssetPath(
     '..',
     'plugins',
     process.platform,
     process.arch,
-    pluginName[process.platform],
+    pluginName[process.platform as 'win32' | 'linux' | 'linux'],
   )
 
   if (!fs.existsSync(pluginFlashPath)) {
@@ -32,7 +33,11 @@ export const addFlash = (swfPath: string) => {
   }
 
   app.commandLine.appendSwitch('ppapi-flash-path', pluginFlashPath)
-  app.commandLine.appendSwitch('ppapi-flash-version', '32.0.0.465')
+  app.commandLine.appendSwitch('ppapi-flash-version', '34.0.0.277')
+  app.commandLine.appendSwitch('ignore-certificate-errors', 'true')
+  app.commandLine.appendSwitch('allow-insecure-localhost', 'true')
+  app.commandLine.appendSwitch('disable-renderer-backgrounding')
+  app.commandLine.appendSwitch('disable-site-isolation-trials')
 
   const trustFlashPath = path.join(
     app.getPath('userData'),

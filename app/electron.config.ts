@@ -20,17 +20,11 @@ export default {
   appId,
   asarUnpack: '**/*.{node,dll}',
   copyright: `Copyright © ${currentYear} — ${author}`,
-  electronVersion: '22.3.27',
   npmRebuild: false,
   productName: name,
   directories: {
     buildResources: 'resources',
     output: 'dist/electron',
-  },
-  electronDownload: {
-    isVerifyChecksum: false,
-    mirror: 'https://github.com/Alex313031/electron-22/releases/download/v',
-    strictSSL: false,
   },
   extraResources: [
     {

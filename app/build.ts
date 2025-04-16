@@ -40,7 +40,11 @@ async function run() {
     for (const bundle of bundled) {
       if ('output' in bundle) {
         for (const chunk of bundle.output) {
-          if (chunk.type === 'chunk' && path.resolve(`${chunk.facadeModuleId}`) === path.resolve(entry.main)) {
+          if (
+            chunk.type === 'chunk'
+            && path.resolve(`${chunk.facadeModuleId}`)
+              === path.resolve(entry.main)
+          ) {
             entryMain = chunk.fileName
           }
         }
@@ -77,7 +81,9 @@ async function copyPackageJson(entry: string) {
         'homepage',
         'repository',
         'license',
-      ].map(_ => [_, packageJson[_]]),
+      ]
+        .map(_ => [_, packageJson?.[_]])
+        .filter(Boolean),
     ),
     main: path.basename(entry),
     dependencies: {},

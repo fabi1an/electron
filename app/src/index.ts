@@ -1,42 +1,48 @@
+import { type Buffer } from 'node:buffer'
+import fs from 'node:fs'
+import path from 'node:path'
 import process from 'node:process'
-import { app, BrowserWindow } from 'electron'
+
+import { app, BrowserWindow, session } from 'electron'
 
 import { addFlash } from './utils/flash'
-import { getAssetPath } from './utils/getAssetPath'
+import { NetworkListener } from './utils/networkListener'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'false'
 
+let networkListener: NetworkListener | null = null
 let mainWindow: BrowserWindow | null = null
-let splashWindow: BrowserWindow | null = null
-const swfPath = 'https://game.aq.com/game/gamefiles/Loader3.swf'
+const swfPath = 'https://game.aq.com/game/'
+const userAgent =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51'
 
-const createSplashWindow = () => {
-  splashWindow = new BrowserWindow({
-    width: 720,
-    height: 306,
-    show: false,
-    frame: false,
-    center: true,
-    alwaysOnTop: true,
-    transparent: true,
-    skipTaskbar: true,
-    resizable: false,
-  })
+function saveBufferToFile(buffer: Buffer, filepath: string) {
+  const downloadsPath = path.join(app.getPath('downloads'), 'aqwps')
+  const filePath = path.resolve(
+    path.join(downloadsPath, new URL(swfPath).hostname, filepath),
+  )
+  if (!fs.existsSync(path.dirname(filePath))) {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true })
+  }
 
-  splashWindow.loadFile(getAssetPath('splash.html'))
-  return new Promise(resolve => {
-    splashWindow?.show()
-    splashWindow!.webContents.once('did-finish-load', resolve)
+  fs.writeFile(filePath, buffer, err => {
+    if (err) {
+      console.error('Failed to save file:', err)
+    } else {
+      console.log('File saved to:', filePath)
+    }
   })
 }
 
 const createMainWindow = async () => {
   mainWindow = new BrowserWindow({
-    show: false,
+    show: true,
     center: true,
     width: 960,
     height: 550,
     webPreferences: {
+      allowRunningInsecureContent: true,
+      webSecurity: false,
       contextIsolation: true,
       webviewTag: false,
       plugins: true,
@@ -45,95 +51,52 @@ const createMainWindow = async () => {
 
   mainWindow.setMenu(null)
   mainWindow.setAspectRatio(960 / 550, { width: 960, height: 550 })
+  mainWindow.webContents.userAgent = userAgent
+  mainWindow.webContents.openDevTools({ mode: 'detach' })
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, fn) => {
+    details.requestHeaders['User-Agent'] = userAgent
+    details.requestHeaders.artixmode = 'launcher'
+    details.requestHeaders['x-requested-with'] = 'ShockwaveFlash/32.0.0.371'
+    fn({ requestHeaders: details.requestHeaders, cancel: false })
+  })
+  await mainWindow.webContents.session.clearHostResolverCache()
 
-  mainWindow.webContents.on('did-frame-finish-load', (event, isMainFrame) => {
-    const url = new URL(mainWindow!.webContents.getURL())
-    if (isMainFrame && url.pathname.endsWith('.swf')) {
-      mainWindow!.webContents.insertCSS(`
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
+  networkListener = new NetworkListener(mainWindow).start()
+
+  networkListener
+    .on('request', ({ requestId, resource }) => {
+      console.log('Request started:', requestId, resource.request.url)
+    })
+    .on('complete', ({ resource }) => {
+      const filePath =
+        new URL(resource.response.url).searchParams.get('path')
+        ?? new URL(resource.response.url).pathname
+      if (['swf', 'mp3'].some(ext => filePath.includes(`.${ext}`))) {
+        saveBufferToFile(resource.body, filePath)
       }
-      embed {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
-      `)
-    }
+    })
+    .on('error', err => {
+      console.error('Network error:', err)
+    })
+
+  mainWindow.webContents.on('did-frame-finish-load', (_, isMainFrame) => {
+    if (!isMainFrame) return
+
+    mainWindow?.webContents.insertCSS(`
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+      embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    `)
   })
 
-  mainWindow.loadURL(swfPath)
-  let showMainWindow: NodeJS.Timeout | null = null
-  let pendingFlashRequests = 0
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
 
-  const onBeforeRequest = (
-    details: Electron.OnBeforeRequestListenerDetails,
-    callback: (response: Electron.Response) => void,
-  ) => {
-    if (splashWindow) {
-      if (showMainWindow === null) {
-        showMainWindow = setTimeout(() => {
-          if (showMainWindow === null) return
-
-          if (pendingFlashRequests === 0) {
-            if (splashWindow) {
-              splashWindow.webContents
-                .executeJavaScript(
-                  `
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('starting').style.display = 'block';
-              `,
-                )
-                .then(() => {
-                  setTimeout(() => {
-                    splashWindow?.close()
-                    splashWindow = null
-
-                    mainWindow?.show()
-                    mainWindow?.focus()
-                  }, 3000)
-                })
-            }
-            clearTimeout(showMainWindow)
-            showMainWindow.unref()
-            showMainWindow = null
-
-            mainWindow!.webContents.session.webRequest.onBeforeRequest(null)
-            mainWindow!.webContents.session.webRequest.onCompleted(null)
-          } else {
-            showMainWindow?.refresh()
-          }
-        }, 10 * 1000)
-      }
-
-      if (new URL(details.url).pathname.endsWith('.swf')) pendingFlashRequests++
-      showMainWindow?.refresh()
-    }
-
-    callback({ cancel: false })
-  }
-
-  const onCompleted = (details: Electron.OnCompletedListenerDetails) => {
-    if (new URL(details.url).pathname.endsWith('.swf')) pendingFlashRequests--
-    showMainWindow?.refresh()
-  }
-
-  mainWindow!.webContents.session.webRequest.onBeforeRequest(
-    { urls: ['*://*/*'] },
-    onBeforeRequest,
-  )
-  mainWindow!.webContents.session.webRequest.onCompleted(
-    { urls: ['*://*/*'] },
-    onCompleted,
-  )
+  await mainWindow.loadURL(swfPath)
 }
 
+app.disableHardwareAcceleration()
+app.commandLine.appendSwitch('disable-renderer-backgrounding')
 switch (process.platform) {
   case 'linux':
     app.commandLine.appendSwitch('no-sandbox')
@@ -156,7 +119,6 @@ addFlash(swfPath)
 app
   .whenReady()
   .then(async () => {
-    await createSplashWindow()
     await createMainWindow()
   })
   .catch(console.error)

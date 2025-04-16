@@ -10,17 +10,21 @@
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
-    "eslint": "^9.23.0"
+    "eslint": "^9.24.0"
   },
   "devDependencies": {
-    "@ntnyq/eslint-config": "^4.0.2",
+    "@ntnyq/eslint-config": "^4.0.4",
     "@ntnyq/prettier-config": "^2.0.0",
     "eslint-plugin-format": "^1.0.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@swc/core",
       "electron",
-      "esbuild"
+      "esbuild",
+      "lmdb",
+      "msgpackr-extract"
     ]
   }
 }
