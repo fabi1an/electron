@@ -45,6 +45,7 @@ export const addFlash = (swfPath: string) => {
     'Shockwave Flash',
     'WritableRoot',
   )
+
   const trustManager = flashTrust.initSync(app.getName(), trustFlashPath)
 
   trustManager.empty()
