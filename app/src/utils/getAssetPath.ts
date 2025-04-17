@@ -12,7 +12,11 @@ export const getAssetPath = (...paths: string[]) => {
 
   if (app.isPackaged) {
     return path.join(
-      ...[rootDir, ...(unpacked ? ['..'] : ['resources']), ...paths]
+      ...[
+        rootDir,
+        ...(unpacked ? ['..', 'resources'] : ['resources']),
+        ...paths,
+      ]
         .flat()
         .filter(Boolean),
     )

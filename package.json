@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "pnpm --stream --filter @electron/app... run build",
+    "build": "pnpm --stream --filter launcher... run build",
     "eslint": "eslint .",
     "eslint:fix": "eslint . --fix",
     "preinstall": "npx only-allow pnpm"

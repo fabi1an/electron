@@ -11,7 +11,7 @@ import electronConfig from './electron.config'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-dotenv.config({ path: path.join(__dirname, '..', '.env') })
+const env = dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
 const distDir = path.join(__dirname, 'dist')
 if (fs.existsSync(distDir)) {
@@ -28,10 +28,10 @@ function defineConfig<T extends InitialParcelOptions>(options: T) {
     defaultConfig: './parcel.config.json',
     mode: 'production',
     defaultTargetOptions: {
+      distDir,
       sourceMaps: false,
       shouldOptimize: true,
       shouldScopeHoist: true,
-      distDir,
       outputFormat: 'commonjs',
     },
     additionalReporters: [
@@ -42,6 +42,7 @@ function defineConfig<T extends InitialParcelOptions>(options: T) {
     ],
     env: {
       NODE_ENV: 'production',
+      ...env.parsed
     },
     ...options,
   } satisfies InitialParcelOptions

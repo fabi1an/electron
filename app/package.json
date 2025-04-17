@@ -1,14 +1,15 @@
 {
-  "name": "@electron/app",
+  "name": "launcher",
   "version": "0.0.1",
   "author": {
     "name": "lazuee"
   },
   "scripts": {
     "build": "pnpx tsx ./build.ts",
+    "dev": "electron ./dist/index.js",
     "postinstall": "electron-builder install-app-deps",
     "preinstall": "npx only-allow pnpm",
-    "start": "electron ./dist/index.js"
+    "start": "dist/electron/linux-unpacked/launcher"
   },
   "dependencies": {
     "nw-flash-trust": "^0.3.0"
