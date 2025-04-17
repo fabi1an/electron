@@ -1,6 +1,5 @@
 {
-  "name": "launcher",
-  "type": "module",
+  "name": "@electron/app",
   "version": "0.0.1",
   "author": {
     "name": "lazuee"
@@ -15,11 +14,11 @@
     "nw-flash-trust": "^0.3.0"
   },
   "devDependencies": {
+    "@electron/parcel-optimizer-obfuscator": "workspace:^",
     "@types/node": "^22.14.1",
     "dotenv": "^16.5.0",
     "electron": "11.5.0",
     "electron-builder": "^25.1.8",
-    "parcel": "^2.14.4",
     "typescript": "^5.8.3"
   }
 }

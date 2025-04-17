@@ -2,11 +2,8 @@ import path from 'node:path'
 
 import { app } from 'electron'
 
-export const RESOURCES_PATH = app.isPackaged
-  ? path.join(__dirname, '..', '..')
-  : path.join(__dirname, '..', 'resources')
-
 export const getAssetPath = (...paths: string[]) => {
+  const rootDir = path.join(__dirname, '..', '..')
   let unpacked = false
   if (paths[0] === '..') {
     unpacked = true
@@ -15,14 +12,10 @@ export const getAssetPath = (...paths: string[]) => {
 
   if (app.isPackaged) {
     return path.join(
-      ...[
-        __dirname,
-        '..',
-        '..',
-        ...(unpacked ? ['..'] : ['resources']),
-        ...paths,
-      ].filter(Boolean),
+      ...[rootDir, ...(unpacked ? ['..'] : ['resources']), ...paths]
+        .flat()
+        .filter(Boolean),
     )
   }
-  return path.join(__dirname, '..', '..', 'resources', ...paths)
+  return path.join(rootDir, 'resources', ...paths)
 }

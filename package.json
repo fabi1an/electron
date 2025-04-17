@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "pnpm --stream --filter launcher... run build",
+    "build": "pnpm --stream --filter @electron/app... run build",
     "eslint": "eslint .",
     "eslint:fix": "eslint . --fix",
     "preinstall": "npx only-allow pnpm"
@@ -15,7 +15,8 @@
   "devDependencies": {
     "@ntnyq/eslint-config": "^4.0.4",
     "@ntnyq/prettier-config": "^2.0.0",
-    "eslint-plugin-format": "^1.0.1"
+    "eslint-plugin-format": "^1.0.1",
+    "parcel": "^2.14.4"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -23,6 +24,7 @@
       "@swc/core",
       "electron",
       "esbuild",
+      "javascript-obfuscator",
       "lmdb",
       "msgpackr-extract"
     ]

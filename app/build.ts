@@ -23,14 +23,16 @@ if (fs.existsSync(distDir)) {
 
 function defineConfig<T extends InitialParcelOptions>(options: T) {
   return {
-    defaultConfig: '@parcel/config-default',
-    shouldDisableCache: true,
     cacheDir: path.join(distDir, '.parcel-cache'),
+    shouldDisableCache: true,
+    defaultConfig: './parcel.config.json',
     mode: 'production',
     defaultTargetOptions: {
       sourceMaps: false,
+      shouldOptimize: true,
       shouldScopeHoist: true,
       distDir,
+      outputFormat: 'commonjs',
     },
     additionalReporters: [
       {
@@ -42,7 +44,7 @@ function defineConfig<T extends InitialParcelOptions>(options: T) {
       NODE_ENV: 'production',
     },
     ...options,
-  }
+  } satisfies InitialParcelOptions
 }
 
 async function buildElectron() {
@@ -127,7 +129,7 @@ async function build(watch = false) {
   } else {
     for (const config of configs) {
       const bundler = new Parcel(config)
-      await bundler.run().catch(() => {})
+      await bundler.run()
     }
 
     await buildElectron()
