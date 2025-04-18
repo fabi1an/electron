@@ -34,8 +34,8 @@ export const addFlash = (swfPath: string) => {
 
   app.commandLine.appendSwitch('ppapi-flash-path', pluginFlashPath)
   app.commandLine.appendSwitch('ppapi-flash-version', '34.0.0.277')
-  app.commandLine.appendSwitch('ignore-certificate-errors', 'true')
-  app.commandLine.appendSwitch('allow-insecure-localhost', 'true')
+  app.commandLine.appendSwitch('ignore-certificate-errors')
+  app.commandLine.appendSwitch('allow-insecure-localhost')
   app.commandLine.appendSwitch('disable-renderer-backgrounding')
   app.commandLine.appendSwitch('disable-site-isolation-trials')
 

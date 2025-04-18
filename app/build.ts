@@ -30,7 +30,7 @@ function defineConfig<T extends InitialParcelOptions>(options: T) {
     defaultTargetOptions: {
       distDir,
       sourceMaps: false,
-      shouldOptimize: true,
+      shouldOptimize: false,
       shouldScopeHoist: true,
       outputFormat: 'commonjs',
     },

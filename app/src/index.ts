@@ -5,6 +5,7 @@ import process from 'node:process'
 
 import { app, BrowserWindow, session } from 'electron'
 
+import { clearCache } from './utils/clearCache'
 import { addFlash } from './utils/flash'
 import { NetworkListener } from './utils/networkListener'
 
@@ -12,6 +13,7 @@ process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'false'
 
 let networkListener: NetworkListener | null = null
 let mainWindow: BrowserWindow | null = null
+const gotTheLock = app.requestSingleInstanceLock()
 const swfPath = 'https://game.aq.com/game/'
 const userAgent =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51'
@@ -42,8 +44,9 @@ const createMainWindow = async () => {
     height: 550,
     webPreferences: {
       allowRunningInsecureContent: true,
-      webSecurity: false,
+      v8CacheOptions: 'bypassHeatCheck',
       contextIsolation: true,
+      webSecurity: false,
       webviewTag: false,
       plugins: true,
     },
@@ -105,16 +108,38 @@ const createMainWindow = async () => {
   await mainWindow.loadURL(swfPath)
 }
 
-app.disableHardwareAcceleration()
-app.commandLine.appendSwitch('disable-renderer-backgrounding')
 switch (process.platform) {
   case 'linux':
     app.commandLine.appendSwitch('no-sandbox')
+    app.commandLine.appendSwitch('disable-features', 'MediaSessionService')
     break
   case 'win32':
-    app.commandLine.appendSwitch('high-dpi-support', '1')
-    app.commandLine.appendSwitch('force-device-scale-factor', '1')
+    app.setAppUserModelId(app.getName())
+    app.commandLine.appendSwitch('high-dpi-support')
+    app.commandLine.appendSwitch('force-device-scale-factor')
     break
+}
+app.allowRendererProcessReuse = true
+app.disableHardwareAcceleration()
+app.commandLine.appendSwitch('disable-renderer-backgrounding')
+app.commandLine.appendSwitch('enable-font-antialiasing')
+app.commandLine.appendSwitch('enable-experimental-web-platform-features')
+app.commandLine.appendSwitch(
+  'js-flags',
+  '--expose_gc --max-old-space-size=512 --max-semi-space-size=128 --noconcurrent_sweeping',
+)
+
+if (gotTheLock) {
+  app.on('second-instance', () => {
+    // Someone tried to run a second instance, we should focus our window.
+    if (mainWindow && mainWindow.isMinimized()) {
+      mainWindow.restore()
+    }
+    mainWindow?.focus()
+  })
+} else {
+  app.quit()
+  process.exit(0)
 }
 
 app
@@ -129,6 +154,7 @@ addFlash(swfPath)
 app
   .whenReady()
   .then(async () => {
+    clearCache()
     await createMainWindow()
   })
   .catch(console.error)
