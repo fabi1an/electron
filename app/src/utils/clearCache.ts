@@ -1,7 +1,4 @@
-import { createRequire } from 'node:module'
 import { session } from 'electron'
-
-const require = createRequire(import.meta.url)
 
 export const clearCache = () =>
   setTimeout(() => {
