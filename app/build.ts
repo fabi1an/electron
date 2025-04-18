@@ -42,48 +42,35 @@ function defineConfig<T extends InitialParcelOptions>(options: T) {
     ],
     env: {
       NODE_ENV: 'production',
-      ...env.parsed
+      ...env.parsed,
     },
     ...options,
   } satisfies InitialParcelOptions
 }
 
 async function buildElectron() {
-  const packageJson = JSON.parse(
+  const pkg = JSON.parse(
     await fs.promises.readFile(path.join(__dirname, 'package.json'), 'utf-8'),
   )
-  const modifiedPackageJson: Record<string, any> = {
-    ...Object.fromEntries(
-      [
-        'name',
-        'version',
-        'description',
-        'author',
-        'homepage',
-        'repository',
-        'license',
-      ]
-        .map(_ => [_, packageJson?.[_]])
-        .filter(Boolean),
-    ),
-    main: 'index.js',
-    dependencies: {},
-  }
+
+  delete pkg.scripts
+  delete pkg.dependencies
+  delete pkg.devDependencies
+  pkg.type = 'commonjs'
+  pkg.main = './index.js'
 
   await fs.promises.writeFile(
     path.join(distDir, 'package.json'),
-    JSON.stringify(modifiedPackageJson, null, 2),
+    JSON.stringify(pkg, null, 2),
     'utf-8',
   )
 
   await electron.build({
     config: {
       ...electronConfig,
-      ...{
-        directories: { app: distDir, output: path.join(distDir, 'electron') },
-        files: [path.join('.', '**', '*')],
-        extends: null,
-      },
+      directories: { app: distDir, output: path.join(distDir, 'electron') },
+      files: ['**\/*', '!**\/electron\/**\/*', '!**\/.parcel-cache\/*'],
+      extends: null,
     },
   })
 }

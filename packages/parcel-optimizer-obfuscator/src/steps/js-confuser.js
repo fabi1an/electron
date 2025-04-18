@@ -1,29 +1,42 @@
 import { obfuscate } from 'js-confuser'
 
-export default async function (code = "", isBrowser = false) {
+export default async function (code = '', isBrowser = false) {
   return await obfuscate(code, {
-    target: isBrowser ? "browser" : "node",
+    target: isBrowser ? 'browser' : 'node',
+    minify: true,
     compact: true,
     flatten: true,
     deadCode: false,
 
+    rgf: true,
     globalConcealing: true,
     stringConcealing: true,
     stringCompression: false,
     stringEncoding: false,
 
-    identifierGenerator: "randomized",
+    identifierGenerator: 'randomized',
     duplicateLiteralsRemoval: true,
     objectExtraction: true,
     renameVariables: true,
     renameGlobals: true,
     renameLabels: true,
 
+    shuffle: true,
+    calculator: true,
     dispatcher: true,
-    opaquePredicates: 0.35,
-    controlFlowFlattening: 0.08,
-    shuffle: { hash: 0.8, true: 0.8 },
+    astScrambler: true,
+    variableMasking: true,
+    opaquePredicates: true,
+    lock: {
+      domainLock: false,
+      startDate: false,
+      endDate: false,
+      tamperProtection: false,
+      selfDefending: true,
+      integrity: true,
+      antiDebug: true,
+    },
   })
-    .then(_ => _.code)
+    .then(result => result.code)
     .catch(() => code)
 }

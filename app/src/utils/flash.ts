@@ -39,14 +39,16 @@ export const addFlash = (swfPath: string) => {
   app.commandLine.appendSwitch('disable-renderer-backgrounding')
   app.commandLine.appendSwitch('disable-site-isolation-trials')
 
-  const trustFlashPath = path.join(
+  const flashTrustPath = path.join(
     app.getPath('userData'),
     'Pepper Data',
     'Shockwave Flash',
     'WritableRoot',
   )
+  const cfgPath = path.join(flashTrustPath, '#Security', 'FlashPlayerTrust')
+  if (!fs.existsSync(cfgPath)) fs.mkdirSync(cfgPath, { recursive: true })
 
-  const trustManager = flashTrust.initSync(app.getName(), trustFlashPath)
+  const trustManager = flashTrust.initSync(app.getName(), flashTrustPath)
 
   trustManager.empty()
   trustManager.add(swfPath)

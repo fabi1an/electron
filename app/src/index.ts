@@ -79,6 +79,16 @@ const createMainWindow = async () => {
       console.error('Network error:', err)
     })
 
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (process.platform === 'win32' && input.key === 'F5') {
+      if (input.control) {
+        mainWindow!.webContents.session.clearCache().then(() => {
+          mainWindow!.webContents.reloadIgnoringCache()
+        })
+      } else mainWindow!.webContents.reload()
+      event.preventDefault()
+    }
+  })
   mainWindow.webContents.on('did-frame-finish-load', (_, isMainFrame) => {
     if (!isMainFrame) return
 

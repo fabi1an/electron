@@ -14,10 +14,11 @@ export default new Optimizer({
       return { contents: code, map }
     }
 
-    const isBrowser = bundle.env.isBrowser();
+    const isBrowser = bundle.env.isBrowser()
     for (const step of steps) {
-      if (step.constructor.name === 'AsyncFunction') code = await step(code, isBrowser)
-      else code = step(code, isBrowser)
+      if (step.constructor.name === 'AsyncFunction') {
+        code = await step(code, isBrowser)
+      } else code = step(code, isBrowser)
     }
 
     return {
